@@ -17,18 +17,22 @@ class TestCalculator:
     def driver(self):
         """Configuration du driver Chrome pour les tests"""
         chrome_options = Options()
-        # Configuration pour environnement CI/CD
+
         if os.getenv("CI"):
-            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--headless=new")
+
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+
+        # ✅ Selenium Manager (pas besoin de webdriver_manager)
+        driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(10)
+
         yield driver
         driver.quit()
+
 
     def test_page_loads(self, driver):
         """Test 1: Vérifier que la page se charge correctement"""
