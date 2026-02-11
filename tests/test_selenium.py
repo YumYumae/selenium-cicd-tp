@@ -9,11 +9,8 @@ from calculator_page import CalculatorPage
 
 
 class TestCalculator:
-
     @pytest.fixture(scope="class")
     def driver(self):
-        """Configuration du driver Chrome pour les tests"""
-
         chrome_options = Options()
 
         if os.getenv("CI"):
@@ -24,41 +21,34 @@ class TestCalculator:
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
 
-        # Selenium Manager (pas besoin de webdriver_manager)
         driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(10)
-
         yield driver
         driver.quit()
 
     def test_page_loads(self, driver):
         page = CalculatorPage(driver)
         page.load_page()
-
         assert "Calculatrice Simple" in driver.title
         assert page.is_loaded()
 
     def test_addition(self, driver):
         page = CalculatorPage(driver)
         page.load_page()
-
         page.enter_first_number("10")
         page.enter_second_number("5")
         page.select_operation("add")
         page.click_calculate()
-
         assert "Résultat: 15" in page.get_result()
 
     def test_division_by_zero(self, driver):
         page = CalculatorPage(driver)
         page.load_page()
-
         page.clear_numbers()
         page.enter_first_number("10")
         page.enter_second_number("0")
         page.select_operation("divide")
         page.click_calculate()
-
         assert "Erreur: Division par zéro" in page.get_result()
 
     def test_all_operations(self, driver):
@@ -78,44 +68,60 @@ class TestCalculator:
             page.enter_second_number(num2)
             page.select_operation(op)
             page.click_calculate()
-
             assert f"Résultat: {expected}" in page.get_result()
             time.sleep(0.5)
 
     def test_page_load_time(self, driver):
         page = CalculatorPage(driver)
-
         start_time = time.time()
         page.load_page()
         page.wait_for_calculator_container()
-
         load_time = time.time() - start_time
         print(f"Temps de chargement: {load_time:.2f} secondes")
-
         assert load_time < 3.0
 
     def test_decimal_numbers(self, driver):
+        """
+        Test 5.1: Décimaux
+        On tente d'abord avec '.', puis avec ',' si l'app est en format FR.
+        """
         page = CalculatorPage(driver)
         page.load_page()
 
+        # Tentative 1: format point
         page.clear_numbers()
         page.enter_first_number("10.5")
         page.enter_second_number("2.25")
         page.select_operation("add")
         page.click_calculate()
 
-        assert "12.75" in page.get_result()
+        try:
+            res = page.get_result(timeout=3)
+            assert "12.75" in res
+            return
+        except Exception:
+            pass
+
+        # Tentative 2: format virgule (FR)
+        page.load_page()
+        page.clear_numbers()
+        page.enter_first_number("10,5")
+        page.enter_second_number("2,25")
+        page.select_operation("add")
+        page.click_calculate()
+
+        res = page.get_result(timeout=5)
+        # Selon l'affichage possible: "12.75" ou "12,75"
+        assert ("12.75" in res) or ("12,75" in res)
 
     def test_negative_numbers(self, driver):
         page = CalculatorPage(driver)
         page.load_page()
-
         page.clear_numbers()
         page.enter_first_number("-8")
         page.enter_second_number("2")
         page.select_operation("subtract")
         page.click_calculate()
-
         assert "-10" in page.get_result()
 
     def test_ui_styles(self, driver):

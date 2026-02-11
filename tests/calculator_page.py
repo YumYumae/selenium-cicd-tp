@@ -37,11 +37,23 @@ class CalculatorPage:
     def click_calculate(self):
         self.driver.find_element(By.ID, "calculate").click()
 
-    def get_result(self):
-        # Attend que le texte ne soit plus vide
-        WebDriverWait(self.driver, 10).until(
-            lambda d: d.find_element(By.ID, "result").text.strip() != ""
-        )
+    def get_result(self, timeout=10):
+        """
+        Attend que #result ait un texte non vide.
+        Si timeout, renvoie une erreur plus explicite avec l'état actuel du champ.
+        """
+        def has_text(d):
+            return d.find_element(By.ID, "result").text.strip() != ""
+
+        try:
+            WebDriverWait(self.driver, timeout).until(has_text)
+        except Exception:
+            # Diagnostic utile
+            current = self.driver.find_element(By.ID, "result").text
+            raise AssertionError(
+                f"Résultat toujours vide après {timeout}s. Valeur actuelle de #result: {current!r}"
+            )
+
         return self.driver.find_element(By.ID, "result").text
 
     def wait_for_calculator_container(self):
