@@ -23,6 +23,7 @@ class TestCalculator:
 
         driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(10)
+
         yield driver
         driver.quit()
 
