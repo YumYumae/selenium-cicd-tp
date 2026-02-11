@@ -1,5 +1,4 @@
 import os
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
@@ -39,10 +38,11 @@ class CalculatorPage:
         self.driver.find_element(By.ID, "calculate").click()
 
     def get_result(self):
-        result = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "result"))
+        # Attend que le texte ne soit plus vide
+        WebDriverWait(self.driver, 10).until(
+            lambda d: d.find_element(By.ID, "result").text.strip() != ""
         )
-        return result.text
+        return self.driver.find_element(By.ID, "result").text
 
     def wait_for_calculator_container(self):
         WebDriverWait(self.driver, 10).until(

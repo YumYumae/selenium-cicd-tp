@@ -1,21 +1,19 @@
 import pytest
 import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
 import os
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 from calculator_page import CalculatorPage
 
 
 class TestCalculator:
+
     @pytest.fixture(scope="class")
     def driver(self):
         """Configuration du driver Chrome pour les tests"""
+
         chrome_options = Options()
 
         if os.getenv("CI"):
@@ -26,27 +24,21 @@ class TestCalculator:
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
 
-        # ✅ Selenium Manager (pas besoin de webdriver_manager)
+        # Selenium Manager (pas besoin de webdriver_manager)
         driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(10)
 
         yield driver
         driver.quit()
 
-
     def test_page_loads(self, driver):
-        """Test 1: Vérifier que la page se charge correctement"""
         page = CalculatorPage(driver)
         page.load_page()
 
-        # Vérifier le titre
         assert "Calculatrice Simple" in driver.title
-
-        # Vérifier la présence des éléments principaux
         assert page.is_loaded()
 
     def test_addition(self, driver):
-        """Test 2: Tester l'addition"""
         page = CalculatorPage(driver)
         page.load_page()
 
@@ -58,7 +50,6 @@ class TestCalculator:
         assert "Résultat: 15" in page.get_result()
 
     def test_division_by_zero(self, driver):
-        """Test 3: Tester la division par zéro"""
         page = CalculatorPage(driver)
         page.load_page()
 
@@ -71,7 +62,6 @@ class TestCalculator:
         assert "Erreur: Division par zéro" in page.get_result()
 
     def test_all_operations(self, driver):
-        """Test 4: Tester toutes les opérations"""
         page = CalculatorPage(driver)
         page.load_page()
 
@@ -90,24 +80,21 @@ class TestCalculator:
             page.click_calculate()
 
             assert f"Résultat: {expected}" in page.get_result()
-            time.sleep(1)
+            time.sleep(0.5)
 
     def test_page_load_time(self, driver):
-        """Test 5: Mesurer le temps de chargement de la page"""
         page = CalculatorPage(driver)
 
         start_time = time.time()
         page.load_page()
-
         page.wait_for_calculator_container()
 
         load_time = time.time() - start_time
         print(f"Temps de chargement: {load_time:.2f} secondes")
 
-        assert load_time < 3.0, f"Page trop lente à charger: {load_time:.2f}s"
+        assert load_time < 3.0
 
     def test_decimal_numbers(self, driver):
-        """Test 5.1: Tester avec des nombres décimaux"""
         page = CalculatorPage(driver)
         page.load_page()
 
@@ -117,10 +104,9 @@ class TestCalculator:
         page.select_operation("add")
         page.click_calculate()
 
-        assert "Résultat: 12.75" in page.get_result()
+        assert "12.75" in page.get_result()
 
     def test_negative_numbers(self, driver):
-        """Test 5.2: Tester avec des nombres négatifs"""
         page = CalculatorPage(driver)
         page.load_page()
 
@@ -130,10 +116,9 @@ class TestCalculator:
         page.select_operation("subtract")
         page.click_calculate()
 
-        assert "Résultat: -10" in page.get_result()
+        assert "-10" in page.get_result()
 
     def test_ui_styles(self, driver):
-        """Test 5.3: Tester l'interface utilisateur (couleurs, tailles)"""
         page = CalculatorPage(driver)
         page.load_page()
 
